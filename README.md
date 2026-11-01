@@ -57,7 +57,37 @@ Decompressing the carved payload yielded a raw binary data file. A deep scan of 
 <img width="760" height="177" alt="image" src="https://github.com/user-attachments/assets/d152e692-a752-4a22-a19f-c0089623c376" />
 <img width="943" height="825" alt="image" src="https://github.com/user-attachments/assets/a577cb59-f071-412b-9693-9fa6a6d7614c" />
 
+### Phase 5: RTOS Static String Hunting & Attack Surface Mapping
+Since the monolithic eCos RTOS lacks a traditional Linux file system (no `/etc/shadow`), static string analysis was performed on the raw binary payload to map the attack surface and identify hidden APIs.
 
+**Key Findings:**
+1.  **Hidden CGI Endpoints:** Discovered undocumented API endpoints at `/cgi-bin/Config.cgi` and `/cgi-bin2/Config.cgi`. Internal format strings (`CONFIG.CGI: Set %s = %s`) indicate these endpoints handle configuration state changes, presenting a high-value target for authentication bypass or command injection testing.
+2.  **UPnP & SOAP Vulnerability Surface:** Identified extensive UPnP service initialization (`UpnpRegisterRootDevice`) relying on SOAP XML envelopes (`http://schemas.xmlsoap.org/soap/envelope/`). In embedded RTOS environments, SOAP parsers are historically prone to Buffer Overflows and XXE injections.
+3.  **Hardcoded Diagnostic Commands:** Revealed internal CLI syntax for network configuration (e.g., `wifi_connect_bssid 0/1 [SSID] BSSID...`), indicating leftover factory diagnostic tools present in the production firmware.
+
+<img width="570" height="122" alt="image" src="https://github.com/user-attachments/assets/7e0b59b0-73ee-4bd1-b21e-5228621b6904" />
+<img width="565" height="168" alt="image" src="https://github.com/user-attachments/assets/e0c22dbd-e795-40d1-9f1d-862d7a1cecf6" />
+<img width="784" height="739" alt="image" src="https://github.com/user-attachments/assets/91c91c2f-530f-4516-beb7-048512450dd3" />
+
+### Phase 6: Redundancy & OTA Update Mechanism Identification
+Further analysis of the secondary compressed block (`D020.xz` at decimal offset 53280) revealed a clean `.7zXZ` header, lacking the plaintext bootloader obfuscation present in the primary block.
+
+**Action:** 
+Decompressed the block directly using standard utilities (`unxz`) and performed a component scan on the raw binary using `binwalk`.
+
+**Finding:**
+The extracted payload was a structural match to the primary eCos RTOS payload, containing the exact same ESP32/ESP32-C3 firmware segments, AES S-Box tables, and x509 certificates. 
+
+**Conclusion:**
+The presence of two identical monolithic OS blocks indicates a **Dual-Bank (A/B Partition) memory design**. This is an industry-standard IoT hardware resilience mechanism designed to facilitate Fail-Safe Over-The-Air (OTA) updates, ensuring device recovery and preventing "bricking" in the event of memory corruption during a firmware flash. 
+
+> **Screenshot: Dual-Bank RTOS block analysis.**
+<img width="935" height="832" alt="image" src="https://github.com/user-attachments/assets/57beb2d6-0a39-44c3-9ccc-091d037a90e2" />
+
+
+
+**Conclusion:**
+The device obfuscates its firmware to prevent casual analysis, but statically exposes critical, legacy attack surfaces (CGI/UPnP) within its monolithic RTOS architecture.
 
 
 ## Next Steps / Threat Modeling
