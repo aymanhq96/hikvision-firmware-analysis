@@ -1,5 +1,3 @@
-# hikvision-firmware-analysis
-
 # IoT Firmware Audit: overcoming manufacturer obfuscation
 
 ## Objective
