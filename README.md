@@ -1,14 +1,4 @@
 # hikvision-firmware-analysis
-Analyzing Hikvision firmware with binwalk
-
-
-<img width="1189" height="790" alt="Captura de pantalla 2026-11-01 172635" src="https://github.com/user-attachments/assets/14e9e20a-3e34-4dd3-b720-81005fca4a01" />
-
-<img width="1152" height="670" alt="image" src="https://github.com/user-attachments/assets/c8685107-4f0f-41e7-bb7a-95c971473546" />
-
-
-
-
 
 # IoT Firmware Audit: overcoming manufacturer obfuscation
 
@@ -20,6 +10,10 @@ Perform a static security analysis and reverse engineering of a commercial IP ca
 We proceed to download a Hikvision firmware from the website
 
 <img width="1189" height="790" alt="Captura de pantalla 2026-11-01 172635" src="https://github.com/user-attachments/assets/14e9e20a-3e34-4dd3-b720-81005fca4a01" />
+
+Then we proceed to click on "Open terminal here.." or you could use cd comand instead
+
+<img width="1152" height="670" alt="image" src="https://github.com/user-attachments/assets/c8685107-4f0f-41e7-bb7a-95c971473546" />
 
 ## Executive summary
 This audit demonstrates the evasion of proprietary firmware obfuscation techniques. Standard automated extraction tools (`binwalk`) failed due to intentional packing methods. Through manual data carving and hex analysis, the true payload was isolated. The core firmware was identified not as a standard Linux filesystem, but as a monolithic **eCos RTOS** running a dual-MCU architecture, heavily relying on **ESP32 and ESP32-C3** co-processors.
